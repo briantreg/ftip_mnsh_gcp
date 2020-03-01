@@ -249,3 +249,5 @@ if 'afl_update' in locals():
     del afl_update
 else:
     print('afl_update does not exist')
+
+afl_DF.to_csv('afl_DF.csv', index = False)
