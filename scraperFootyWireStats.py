@@ -89,9 +89,9 @@ def getStatTable(some_soup):
     return stat_table
 def getStats(the_stat_table, team, stat_type):
     if team == 'home':
-        col_num = 0
+        col_num = 1
     if team == 'away':
-        col_num = 2
+        col_num = 3
     if stat_type == 'basic':
         last_row = 27
     if stat_type == 'advanced':
@@ -145,7 +145,7 @@ def scrapeGameData(soup):
     bsc_stat_tbl = getStatTable(soup)
     bsc_home_stats = getStats(bsc_stat_tbl, 'home', 'basic')
     bsc_away_stats = getStats(bsc_stat_tbl, 'away', 'basic')
-    bsc_stat_lbl = replacePcnt(pd.Series(data =  bsc_stat_tbl.iloc[2:27,1]))
+    bsc_stat_lbl = replacePcnt(pd.Series(data =  bsc_stat_tbl.iloc[2:27,2]))
     home_team = bsc_stat_tbl.iloc[1,1]
     away_team = bsc_stat_tbl.iloc[1,3]
 
@@ -162,7 +162,7 @@ def scrapeGameData(soup):
         adv_stat_tbl = getStatTable(advanced_soup)
         adv_home_stats = getStats(adv_stat_tbl, 'home', 'advanced')
         adv_away_stats = getStats(adv_stat_tbl, 'away', 'advanced')
-        adv_stat_lbl = replacePcnt(pd.Series(data =  adv_stat_tbl.iloc[2:22,1]))
+        adv_stat_lbl = replacePcnt(pd.Series(data =  adv_stat_tbl.iloc[2:22,2]))
 
         header_cols = pd.concat([header_cols,
                   bsc_stat_lbl + 'Team', adv_stat_lbl + 'Team',
@@ -200,6 +200,7 @@ def scrapeGameData(soup):
 
 game_ids = []
 for year in range(year_start,year_end + 1):
+    print('Scraping ids for', year, 'season....')
     try:
         afl_year_url = 'https://www.footywire.com/afl/footy/ft_match_list?year=' + str(year)
         soup = getSoup(afl_year_url)
@@ -217,7 +218,9 @@ if os.path.isfile('./afl_DF.pkl'):
 if 'afl_DF' in locals():
     scraped_ids = list(afl_DF.loc[0:]['fw_game_id'].astype('int'))
     game_ids = [x for x in game_ids if x not in scraped_ids]
-    
+
+print('Scraping data for',len(game_ids), 'games...')
+
 for game_id in game_ids:
     #scrape the data from the game page on footywire.com
     game_id =  str(game_id)
@@ -232,7 +235,9 @@ for game_id in game_ids:
     else:
         afl_update  = afl_update.append(new_game, ignore_index=True)
     sys.stdout.flush()
-    print(min(new_game.year),
+    print('Scraping Game: Year = ',
+          min(new_game.year),
+          'Round = ',
     min(new_game.round_char))
     
 if 'afl_update' in locals():
